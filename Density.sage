@@ -1,8 +1,9 @@
 def compute_densities(P, Q, p): # Computes the density of each output of ct[P^nQ] mod p
     # Begin by computing time spent on each DFA state, and then sum over states with equal outputs
-    import DFA
+    # For a reference, see Section 8.2 of Automatic Sequences by Allouche and Shallit
+    from DFA import PolyAuto
     R.<t> = LaurentPolynomialRing(GF(p), 1)
-    (states, transitions, output_func) = DFA.PolyAuto(P, Q, p, 10000)
+    (states, transitions, output_func) = PolyAuto(P, Q, p, 10000)
 
     mat = [[0 for _ in range(len(states))] for _ in range(len(states))]
 
@@ -31,11 +32,16 @@ def compute_densities(P, Q, p): # Computes the density of each output of ct[P^nQ
         return z.real()
 
     (J, P) = Matrix(QQbar, count_mat).jordan_form(transformation=True)
-    state_densities = (Matrix([[1] + [0]*(len(states)-1)])*P*J.apply_map(kill)*P^(-1)).apply_map(re)
+
+    if (not P.is_invertible()): # For some reason this check is necessary to avoid errors sometimes
+        raise Exception(f"Non-invertible matrix unexpected: {P}")
+
+    state_densities = (Matrix([[1] + [0]*(len(states)-1)])*P*J.apply_map(kill)*P.inverse()).apply_map(re)
     return state_densities*Matrix(state_to_value)
 
-# TODO: Verify that this is in agreement with the Corollary and check against above def
 def motzkin_zero_density_mod(p): # Returns motzkin zero density according to Corollary 12
+    from Sequences import Central_Trinomial, Motzkin_mod
+
     if(p == 2): # 3-case form only holds for p>2
         return 1/3
     for i in range(p):
@@ -47,15 +53,54 @@ def motzkin_zero_density_mod(p): # Returns motzkin zero density according to Cor
     motzkin_zero_count = 0
     likely_zero_count = 0
     unlikely_zero_count = 0
+
     for i in range(p-1):
+        if (F(Central_Trinomial(i)) == sgn*F(Central_Trinomial(i+1))):
+            likely_zero_count += 1
         if (F(Central_Trinomial(i)) == F(Central_Trinomial(i+1))):
             unlikely_zero_count += 1
-        if (sgn*F(Central_Trinomial(i)) == F(Central_Trinomial(i+1))):
-            likely_zero_count += 1
 
     for i in range(p-2):
         if (Motzkin_mod(i, p)== 0):
             motzkin_zero_count += 1
     
     density = motzkin_zero_count/p + 2*likely_zero_count/((p-1)*(p+1)) + 2*unlikely_zero_count/((p-1)*p*(p+1))
-    return (density, motzkin_zero_count, likely_zero_count, unlikely_zero_count)
+    
+    return density
+
+def general_motzkin_zero_density_mod(a, b, p): # Returns motzkin zero density according to Proposition 11
+    from Sequences import General_Central_Trinomial, General_Motzkin_mod
+
+    if (p == 2): # 3-case form only holds for p>2
+        R.<t> = LaurentPolynomialRing(GF(p), 1)
+        return compute_densities(a*t^-1 + b + a*t, 1-t^2, p)[0][0]
+    
+    if (a % p == 0): # If p | a, then M^{a,b}_n = b^n mod p
+        if (b % p == 0):
+            return 1
+        else:
+            return 0
+
+    for i in range(p):
+        if(General_Central_Trinomial(a, b, i) % p == 0):
+            return 1
+    
+    F = GF(p)
+    sgn = F(b^2 - 4*a^2)^((p-1)/2)
+    motzkin_zero_count = 0
+    likely_zero_count = 0
+    unlikely_zero_count = 0
+
+    for i in range(p-1):
+        if (F(b)*F(General_Central_Trinomial(a, b, i)) == sgn*F(General_Central_Trinomial(a, b, i+1))):
+            likely_zero_count += 1
+        if (F(b)*F(General_Central_Trinomial(a, b, i)) == F(General_Central_Trinomial(a, b, i+1))):
+            unlikely_zero_count += 1
+
+    for i in range(p-2):
+        if (General_Motzkin_mod(a, b, i, p) == 0):
+            motzkin_zero_count += 1
+    
+    density = motzkin_zero_count/p + 2*likely_zero_count/((p-1)*(p+1)) + 2*unlikely_zero_count/((p-1)*p*(p+1))
+    
+    return density

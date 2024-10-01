@@ -27,6 +27,33 @@ def Central_Trinomial(n): # A002426
     
     return central_array[n]
 
+def General_Central_Trinomial(a, b, n):
+    if (n == 0):
+        return 1
+
+    prev = 1
+    next = b
+    for i in range(2, n+1):
+        # Compute next value using nT_n = b(2n-1)T_{n-1} - (b^2 - 4a^2)(n-1)T_{n-2}
+        new_next = (b*(2*i - 1)*next - (b^2 - 4*a^2)*(i - 1)*prev)/i
+        prev = next
+        next = new_next
+    
+    return next
+
+def General_Motzkin(a, b, n):
+    if (n == 0):
+        return 1
+
+    prev = 1
+    next = b
+    for i in range(2, n+1):
+        # Compute next value using (n+2)M_n = b(2n+1)M_{n-1} - (b^2 - 4a^2)(n-1)M_{n-2}
+        new_next = (b*(2*i + 1)*next - (b^2 - 4*a^2)*(i - 1)*prev)/(i+2)
+        prev = next
+        next = new_next
+    
+    return next
 
 def Central_Trinomial_mod(n, p): # Fast computation for A002426(n) mod p using the Lucas Congruence
     if (n == 0):
@@ -41,9 +68,28 @@ def Central_Trinomial_mod(n, p): # Fast computation for A002426(n) mod p using t
     
     return reduce(mult_p, list(map(central_h, Integer(n).digits(p)))) # T_n is congruent to the product of T_{n_i} where n_i are the digits of n in base p
 
+def General_Central_Trinomial_mod(a, b, n, p): # Fast computation for T^{a,b}(n) mod p using the Lucas Congruence
+    if (n == 0):
+        return 1
+    
+    R = IntegerModRing(p)
+
+    def central_h(i): # Returns A002426 mod p computed without tricks (used for i < p)
+        return R(General_Central_Trinomial(a, b, i))
+    def mult_p(a, b): # Returns a*b mod p
+        return R(a)*R(b)
+    
+    return reduce(mult_p, list(map(central_h, Integer(n).digits(p)))) # T_n is congruent to the product of T_{n_i} where n_i are the digits of n in base p
+
 def Motzkin_mod(n, p): # Fast computation for A001006(n) mod p using fast computation for A002426
     R = IntegerModRing(p)
     return (R(2)^(-1))*(3*Central_Trinomial_mod(n, p) + 2*Central_Trinomial_mod(n+1, p) - Central_Trinomial_mod(n+2, p)) # 2M_n = 3T_n + 2T_{n+1} - T_{n+2}
+
+def General_Motzkin_mod(a, b, n, p): # Fast computation for M^{a,b} mod p using fast computation for T^{a,b}
+    R = IntegerModRing(p)
+    if (R(a) == 0):
+        return R(b)^n
+    return (R(2*a^2)^(-1))*((4*a^2 - b^2)*General_Central_Trinomial_mod(a, b, n, p) + 2*b*General_Central_Trinomial_mod(a, b, n+1, p) - General_Central_Trinomial_mod(a, b, n+2, p)) # 2a^2M_n = (4a^2 - b^2)T_n + 2bT_{n+1} - T_{n+2}
 
 def next_Motzkin_mod(prev, prev_n, p): # Even faster computation for A001006(prev_n + 1) mod p if A001006(prev_n) mod p is known
     prev_n0 = prev_n % p
