@@ -14,7 +14,7 @@ def PolyAutoGeneral(P, Q, p, state_bound, fail_on_zero): # Returns state machine
         for i in range(p): # Add transitions for states[k]
             new_state = Lambda(R(P)^i*states[k], p)
             
-            if (fail_on_zero and R(simp).constant_coefficient() == 0): # If a zero state is found, return None if fail_on_zero is true
+            if (fail_on_zero and R(new_state).constant_coefficient() == 0): # If a zero state is found, return None if fail_on_zero is true
                     return None
             
             new_state_index = len(states) # Determine if new_state is a state we've already seen
@@ -55,7 +55,7 @@ def serialize(machine, p): # Serializes a machine over alphabet GF(p) for use wi
 
 def evaluate(machine, p, input): # Evaluates machine on input integer
     digits = Integer(input).digits(p)
-    (states, transitions, ouptut_func) = machine
+    (states, transitions, output_func) = machine
     current_index = 0
     for digit in digits:
         (i, j) = transitions[current_index][digit]
@@ -66,4 +66,3 @@ def evaluate(machine, p, input): # Evaluates machine on input integer
 # TODO: Add multi-variate support (not urgent)
 # TODO: Tests in another file with some framework or something
 # TODO: Benchmarks for functions computing equal values
-# TODO: Make nice tutorial notebook(s)
