@@ -104,3 +104,37 @@ def general_motzkin_zero_density_mod(a, b, p): # Returns motzkin zero density ac
     density = motzkin_zero_count/p + 2*likely_zero_count/((p-1)*(p+1)) + 2*unlikely_zero_count/((p-1)*p*(p+1))
     
     return density
+
+def generic_linear_zero_density_mod(Q, a, b, c, d, p): # Returns motzkin zero density according to Corollary 12
+    from Sequences import Central_Trinomial, Constant_Term_mod
+
+    F = GF(p)
+    R.<t> = LaurentPolynomialRing(F, 1)
+
+    if(p == 2): # 3-case form only holds for p>2
+        return compute_densities(t^-1 + 1 + t, Q, p)[0][0]
+    for i in range(p):
+        if(Central_Trinomial(i) % p == 0):
+            return 1
+
+    sgn = F(-3)^((p-1)/2)
+    zero_count = 0
+    likely_zero_count = 0
+    unlikely_zero_count = 0
+    zs = []
+    ls = []
+    us = []
+
+    for i in range(p-1):
+        if (Constant_Term_mod(t^-1 + 1 + t, Q, i, p) == 0):
+            zs.append(i)
+            zero_count += 1
+        if (a*F(Central_Trinomial(i)) == b*sgn*F(Central_Trinomial(i+1))):
+            ls.append(i)
+            likely_zero_count += 1
+        if (c*F(Central_Trinomial(i)) == d*F(Central_Trinomial(i+1))):
+            us.append(i)
+            unlikely_zero_count += 1
+    
+    density = zero_count/p + likely_zero_count/((p-1)*(p+1)) + unlikely_zero_count/((p-1)*p*(p+1))
+    return density
