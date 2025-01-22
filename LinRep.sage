@@ -52,9 +52,9 @@ def apply_lin_rep(v, mats, w, n, p): # Returns v * phi((n)_p) * w
     digits = Integer(n).digits(p)
     for digit in digits:
         vec = vec * mats[digit]
-    return vec * w
+    return (vec * w)[0][0]
 
-def lin_rep_to_machine(v, mats, state_bound): # Converts a linear representation to a DFA
+def lin_rep_to_machine(v, mats, p, state_bound): # Converts a linear representation to a DFA
     k = 0
     states = [v]
     transitions = [[]]
@@ -91,20 +91,22 @@ def serialize_lin_rep_machine(machine, w, p): # Serializes a machine (as output 
 
 def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value for which p divides ct[P^nQ]
     # It is asymptotically faster to build the DFA than to loop through values of n
+    # A new implementation is required since this library constructs lsd DFAs
+    # but finding the first zero requires minimizing with a msd DFA.
     if (Q.constant_coefficient() == 0):
         return 0
     
     (v, mats, w) = lin_rep(P, Q, p)
     k = 0
-    states = [(v, [])]
+    states = [(w, [])]
     transitions = [[]]
 
     while (k < len(states)):
         for i in range(p):
             (state, path) = states[k]
-            next_state = state*mats[i]
+            next_state = mats[i]*state
 
-            if ((next_state*w)[0][0] == 0):
+            if ((v*next_state)[0][0] == 0):
                 new_path = path.copy()
                 new_path.append(i)
                 return Integer(new_path, p)
