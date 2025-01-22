@@ -105,7 +105,7 @@ def general_motzkin_zero_density_mod(a, b, p): # Returns motzkin zero density ac
     
     return density
 
-def generic_linear_zero_density_mod(Q, a, b, c, d, p): # Returns motzkin zero density according to Corollary 12
+def generic_linear_zero_density_mod(Q, a, b, c, d, p): # Returns motzkin zero density according to the process of Section 3.1
     from Sequences import Central_Trinomial, Constant_Term_mod
 
     F = GF(p)
