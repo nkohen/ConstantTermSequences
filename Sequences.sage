@@ -3,9 +3,19 @@ from functools import reduce
 def Constant_Term(P, Q, n): # Naively computes ct[P^nQ]
     return ((P^n)*Q).constant_coefficient()
 
-def Constant_Term_mod(P, Q, n, p): # Naively computes ct[P^nQ] mod p
+def Constant_Term_mod_slow(P, Q, n, p): # Naively computes ct[P^nQ] mod p
     R.<t> = LaurentPolynomialRing(IntegerModRing(p), 1)
     return ((R(P)^n)*R(Q)).constant_coefficient()
+
+def Constant_Term_mod(P, Q, n, p): # Efficiently computes ct[P^nQ] mod p
+    if (n == 0):
+        return Q.constant_coefficient() % p
+
+    import PolyUtil
+    r = n % p
+    new_n = (n - r)/p
+    new_Q = PolyUtil.Lambda(Q*P^r, p)
+    return Constant_Term_mod(P, new_Q, new_n, p)
 
 motzkin_array = [1,1] # Cached Motzkin sequence
 def Motzkin(n): # A001006

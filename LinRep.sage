@@ -89,7 +89,7 @@ def serialize_lin_rep_machine(machine, w, p): # Serializes a machine (as output 
         s += "\n"
     return s
 
-def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value for which p divides ct[P^nQ]
+def compute_shortest_element(P, Q, p, element, state_bound): # Returns the first value for which p divides element - ct[P^nQ]
     # It is asymptotically faster to build the DFA than to loop through values of n
     # A new implementation is required since this library constructs lsd DFAs
     # but finding the first zero requires minimizing with a msd DFA.
@@ -106,7 +106,7 @@ def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value for w
             (state, path) = states[k]
             next_state = mats[i]*state
 
-            if ((v*next_state)[0][0] == 0):
+            if ((v*next_state)[0][0] == element):
                 new_path = path.copy()
                 new_path.append(i)
                 return Integer(new_path, p)
@@ -129,3 +129,6 @@ def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value for w
         k = k+1
     
     return None
+
+def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value for which p divides ct[P^nQ]
+    return compute_shortest_element(P, Q, p, 0, state_bound)
