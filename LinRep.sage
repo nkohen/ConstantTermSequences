@@ -8,7 +8,7 @@ of t^(-max_deg) to that of t^(max_deg).
 
 def compute_mat_for_poly(poly, max_deg, p): # Computes the matrix for Q -> Lambda_p(poly*Q)
     return Matrix(GF(p), 2*max_deg + 1,
-        lambda i, j: get_coefficient(poly, (i-max_deg)-(j - max_deg)*p)
+        lambda i, j: get_coefficient(poly, (max_deg - i)-(max_deg - j)*p)
     )
 
 def compute_mat(P, k, max_deg, p): # Computes the matrix for Q -> Lambda_p((P^k)*Q)
@@ -109,6 +109,7 @@ def compute_shortest_element(P, Q, p, element, state_bound): # Returns the first
             if ((v*next_state)[0][0] == element):
                 new_path = path.copy()
                 new_path.append(i)
+                new_path.reverse()
                 return Integer(new_path, p)
 
             transitions[k].append(next_state)
