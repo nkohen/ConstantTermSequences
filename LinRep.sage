@@ -89,11 +89,11 @@ def serialize_lin_rep_machine(machine, w, p): # Serializes a machine (as output 
         s += "\n"
     return s
 
-def compute_shortest_element(P, Q, p, element, state_bound): # Returns the first value for which p divides element - ct[P^nQ]
+def compute_shortest_prop(P, Q, p, prop, state_bound): # Returns the first value for which ct[P^nQ] satisfies prop
     # It is asymptotically faster to build the DFA than to loop through values of n
     # A new implementation is required since this library constructs lsd DFAs
-    # but finding the first zero requires minimizing with a msd DFA.
-    if (Q.constant_coefficient() == 0):
+    # but finding the first prop-satisfying value requires minimizing with a msd DFA.
+    if (prop(Q.constant_coefficient())):
         return 0
     
     (v, mats, w) = lin_rep(P, Q, p)
@@ -106,7 +106,7 @@ def compute_shortest_element(P, Q, p, element, state_bound): # Returns the first
             (state, path) = states[k]
             next_state = mats[i]*state
 
-            if ((v*next_state)[0][0] == element):
+            if (prop((v*next_state)[0][0])):
                 new_path = path.copy()
                 new_path.append(i)
                 new_path.reverse()
@@ -131,5 +131,17 @@ def compute_shortest_element(P, Q, p, element, state_bound): # Returns the first
     
     return None
 
-def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value for which p divides ct[P^nQ]
+def compute_shortest_element(P, Q, p, element, state_bound): # Returns the first value for which p divides element - ct[P^nQ]
+    def equals_element(n):
+        return (n == element)
+    
+    return compute_shortest_prop(P, Q, p, equals_element, state_bound)
+
+def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value of n for which p divides ct[P^nQ]
     return compute_shortest_element(P, Q, p, 0, state_bound)
+
+def compute_shortest_non_zero(P, Q, p, state_bound): # Returns the first value of n for which p does not divide ct[P^nQ]]
+    def not_zero(n):
+        return (n != 0)
+    
+    return compute_shortest_prop(P, Q, p, not_zero, state_bound)
