@@ -138,6 +138,13 @@ def compute_shortest_element(P, Q, p, element, state_bound): # Returns the first
     return compute_shortest_prop(P, Q, p, equals_element, state_bound)
 
 def compute_shortest_zero(P, Q, p, state_bound): # Returns the first value of n for which p divides ct[P^nQ]
+    import DFA
+    try: # First optimistically try to compute the lsd-first DFA with a low state_bound
+        if (DFA.PolyAutoFailOnZero(P, Q, p, 100+p) != None):
+            return None
+    except:
+        None # Do nothing here
+    
     return compute_shortest_element(P, Q, p, 0, state_bound)
 
 def compute_shortest_non_zero(P, Q, p, state_bound): # Returns the first value of n for which p does not divide ct[P^nQ]]
