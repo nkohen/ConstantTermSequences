@@ -11,5 +11,6 @@ authors:
   - given-names: Nadav
     family-names: Kohen
     email: nadavk25@gmail.com
+repository-code: 'https://github.com/nkohen/ConstantTermSequences'
 version: '0'
 date-released: '2025-04-25'
